@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CaptureX — Classic Camera Lenses</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <!-- Ambient Backdrop -->
+  <div class="studio-bg">
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+  </div>
+
+  <!-- Mobile Device Shell (Exact match to uploaded photo) -->
+  <div class="phone-wrapper">
+    <div class="phone-body">
+      
+      <!-- Top Status Bar -->
+      <div class="phone-status-bar">
+        <span class="status-time">9:38</span>
+        <div class="status-icons">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.28 19.64 10.59 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg>
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4z"/></svg>
+          <span class="battery-pill"><span class="battery-fill"></span></span>
+        </div>
+      </div>
+
+      <!-- App Header: Back Arrow + "Classic Camera Lenses" -->
+      <header class="lens-header">
+        <button class="back-btn" id="btnBack" aria-label="Back">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </button>
+        <h1 class="header-title">Classic Camera Lenses</h1>
+        <div class="header-actions">
+          <button class="export-btn" id="btnExportTop" title="Save Photo">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <!-- Center Featured Photo Frame with Optical Bokeh Simulation -->
+      <main class="viewport-stage">
+        
+        <!-- Framed Card -->
+        <div class="photo-frame-card" id="photoFrameCard">
+          <canvas id="lensCanvas" class="lens-canvas"></canvas>
+          <video id="webcam" playsinline autoplay muted style="display: none;"></video>
+          
+          <!-- Focus Reticle Overlay -->
+          <div class="depth-reticle" id="depthReticle">
+            <div class="reticle-ring"></div>
+            <span class="reticle-dist" id="reticleDist">1.2m</span>
+          </div>
+
+          <!-- Flash Screen Overlay -->
+          <div class="flash-cover" id="flashCover"></div>
+
+          <!-- Live Optical Specs HUD Badge -->
+          <div class="lens-badge-overlay" id="lensBadgeOverlay">
+            <span class="badge-lens-name" id="badgeLensName">Noctilux 50mm</span>
+            <span class="badge-aperture" id="badgeAperture">ƒ/0.95</span>
+          </div>
+        </div>
+
+        <!-- Frame Drag Handle Indicator -->
+        <div class="frame-drag-handle"></div>
+
+      </main>
+
+      <!-- Dynamic Control Drawer (Switches between Aperture, Lens, Depth, Color Lab, Frame, Crop) -->
+      <section class="control-drawer">
+
+        <!-- 1. LENS CAROUSEL VIEW (Default) -->
+        <div class="drawer-view active" id="viewLens">
+          <div class="lens-carousel" id="lensCarousel">
+            <!-- Dynamically populated classic lenses -->
+          </div>
+        </div>
+
+        <!-- 2. APERTURE DIAL VIEW -->
+        <div class="drawer-view" id="viewAperture">
+          <div class="drawer-header-row">
+            <span class="drawer-label">APERTURE DIAPHRAGM</span>
+            <span class="drawer-val" id="apertureValue">ƒ/0.95</span>
+          </div>
+          <div class="aperture-scale" id="apertureScale">
+            <button class="f-stop active" data-f="0.95">ƒ/0.95</button>
+            <button class="f-stop" data-f="1.2">ƒ/1.2</button>
+            <button class="f-stop" data-f="1.4">ƒ/1.4</button>
+            <button class="f-stop" data-f="1.8">ƒ/1.8</button>
+            <button class="f-stop" data-f="2.8">ƒ/2.8</button>
+            <button class="f-stop" data-f="4.0">ƒ/4.0</button>
+            <button class="f-stop" data-f="5.6">ƒ/5.6</button>
+            <button class="f-stop" data-f="8.0">ƒ/8.0</button>
+          </div>
+        </div>
+
+        <!-- 3. DEPTH MAP & FOCUS PLANE VIEW -->
+        <div class="drawer-view" id="viewDepth">
+          <div class="drawer-header-row">
+            <span class="drawer-label">DEPTH OF FIELD ISOLATION</span>
+            <span class="drawer-val" id="depthValue">85% Blur</span>
+          </div>
+          <input type="range" id="depthSlider" min="0" max="100" value="85" class="pro-slider">
+          <div class="depth-hint">Tap on the photo to shift optical focal plane</div>
+        </div>
+
+        <!-- 4. COLOR LAB VIEW (Moody, Dreamy, Nightcore, Vivid, Film) -->
+        <div class="drawer-view" id="viewColorLab">
+          <div class="color-preset-strip" id="colorPresetStrip">
+            <button class="color-pill active" data-color="moody">Moody Noir</button>
+            <button class="color-pill" data-color="dreamy">Dreamy Glow</button>
+            <button class="color-pill" data-color="nightcore">Nightcore Neon</button>
+            <button class="color-pill" data-color="vivid">Vivid Pop</button>
+            <button class="color-pill" data-color="portra">Portra 400</button>
+            <button class="color-pill" data-color="trix">Tri-X B&W</button>
+          </div>
+        </div>
+
+        <!-- 5. FRAME & WATERMARK VIEW -->
+        <div class="drawer-view" id="viewFrame">
+          <div class="frame-selector-row">
+            <button class="frame-opt active" data-frame="watermark">
+              <span class="f-icon">✦</span>
+              <span class="f-label">CaptureX Badge</span>
+            </button>
+            <button class="frame-opt" data-frame="border">
+              <span class="f-icon">▢</span>
+              <span class="f-label">White Gallery</span>
+            </button>
+            <button class="frame-opt" data-frame="film">
+              <span class="f-icon">🎞️</span>
+              <span class="f-label">35mm Filmstrip</span>
+            </button>
+            <button class="frame-opt" data-frame="none">
+              <span class="f-icon">✕</span>
+              <span class="f-label">Clean Borderless</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 6. CROP VIEW -->
+        <div class="drawer-view" id="viewCrop">
+          <div class="crop-ratios">
+            <button class="crop-btn active" data-aspect="3:4">3:4 Classic</button>
+            <button class="crop-btn" data-aspect="1:1">1:1 Square</button>
+            <button class="crop-btn" data-aspect="16:9">16:9 Cinema</button>
+            <button class="crop-btn" data-aspect="3:2">3:2 Leica</button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- Bottom Tab Navigation Bar (Matches uploaded photo exactly) -->
+      <nav class="bottom-tab-bar">
+        
+        <!-- Tab 1: Aperture -->
+        <button class="tab-item" data-tab="aperture">
+          <div class="tab-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="14.31" y1="8" x2="20.05" y2="17.94"></line>
+              <line x1="9.69" y1="8" x2="21.17" y2="8"></line>
+              <line x1="7.38" y1="12" x2="13.12" y2="2.06"></line>
+              <line x1="9.69" y1="16" x2="3.95" y2="6.06"></line>
+              <line x1="14.31" y1="16" x2="2.83" y2="16"></line>
+              <line x1="16.62" y1="12" x2="10.88" y2="21.94"></line>
+            </svg>
+          </div>
+          <span class="tab-label">Aperture</span>
+          <span class="active-dot"></span>
+        </button>
+
+        <!-- Tab 2: Lens (Active default) -->
+        <button class="tab-item active" data-tab="lens">
+          <div class="tab-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="5" y="4" width="14" height="16" rx="3"></rect>
+              <circle cx="12" cy="12" r="4"></circle>
+              <line x1="8" y1="4" x2="8" y2="20"></line>
+              <line x1="16" y1="4" x2="16" y2="20"></line>
+            </svg>
+          </div>
+          <span class="tab-label">Lens</span>
+          <span class="active-dot"></span>
+        </button>
+
+        <!-- Tab 3: Depth -->
+        <button class="tab-item" data-tab="depth">
+          <div class="tab-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </div>
+          <span class="tab-label">Depth</span>
+          <span class="active-dot"></span>
+        </button>
+
+        <!-- Tab 4: Color Lab -->
+        <button class="tab-item" data-tab="colorlab">
+          <div class="tab-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 2a10 10 0 0 1 0 20z" fill="currentColor"></path>
+            </svg>
+          </div>
+          <span class="tab-label">Color Lab</span>
+          <span class="active-dot"></span>
+        </button>
+
+        <!-- Tab 5: Frame -->
+        <button class="tab-item" data-tab="frame">
+          <div class="tab-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+          </div>
+          <span class="tab-label">Frame</span>
+          <span class="active-dot"></span>
+        </button>
+
+        <!-- Tab 6: Crop -->
+        <button class="tab-item" data-tab="crop">
+          <div class="tab-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M6 2v14a2 2 0 0 0 2 2h14"></path>
+              <path d="M18 22V8a2 2 0 0 0-2-2H2"></path>
+            </svg>
+          </div>
+          <span class="tab-label">Crop</span>
+          <span class="active-dot"></span>
+        </button>
+
+      </nav>
+
+    </div>
+  </div>
+
+  <!-- SAVED PHOTO PREVIEW MODAL -->
+  <div class="modal-backdrop" id="exportModal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Master Export</h3>
+        <button class="modal-x" id="btnCloseExport">✕</button>
+      </div>
+      <div class="export-preview-box">
+        <img id="exportImg" src="" alt="Exported Photo">
+      </div>
+      <a id="btnDownloadExport" href="#" download="CaptureX_Classic_Lens.jpg" class="download-cta">
+        Download Lossless JPG with Watermark
+      </a>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

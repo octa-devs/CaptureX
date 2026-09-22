@@ -1,0 +1,20 @@
+# CaptureX Git Ignore
+# Flutter / Dart
+capturex_mobile/.dart_tool/
+capturex_mobile/.flutter-plugins
+capturex_mobile/.flutter-plugins-dependencies
+capturex_mobile/.packages
+capturex_mobile/.pub-cache/
+capturex_mobile/.pub/
+capturex_mobile/build/
+capturex_mobile/android/.gradle/
+capturex_mobile/android/local.properties
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# OS
+.DS_Store
+Thumbs.db
