@@ -47,6 +47,10 @@ jobs:
         working-directory: ./capturex_mobile
         run: flutter pub get
 
+      - name: Generate App Icon
+        working-directory: ./capturex_mobile
+        run: dart run flutter_launcher_icons
+
       - name: Build Android Universal Release APK
         working-directory: ./capturex_mobile
         run: flutter build apk --release --no-tree-shake-icons
@@ -54,14 +58,14 @@ jobs:
       - name: Prepare Output Directory
         run: |
           mkdir -p release-output
-          cp capturex_mobile/build/app/outputs/flutter-apk/app-release.apk release-output/CaptureX-v1.0.0-Release.apk
+          cp capturex_mobile/build/app/outputs/flutter-apk/app-release.apk release-output/CaptureX-v1.1.0-Release.apk
           ls -la release-output/
 
       - name: Upload APK Artifact to GitHub Actions
         uses: actions/upload-artifact@v4
         with:
-          name: CaptureX-v1.0.0-Release-APK
-          path: release-output/CaptureX-v1.0.0-Release.apk
+          name: CaptureX-v1.1.0-Release-APK
+          path: release-output/CaptureX-v1.1.0-Release.apk
           if-no-files-found: error
           retention-days: 30
 
@@ -69,22 +73,29 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
-          tag_name: v1.0.0
-          name: "CaptureX Release v1.0.0 — Classic Camera Lenses"
+          tag_name: v1.1.0
+          name: "CaptureX v1.1.0 — Real Camera + Video + Liquid Glass"
           draft: false
           prerelease: false
           body: |
-            ## 📸 CaptureX — Pro Classic Camera Lenses (v1.0.0)
+            ## 📸 CaptureX v1.1.0 — Pro Camera & Video App
 
-            ### ✨ Key Features
-            - **Classic Camera Lenses**: Noctilux 50mm ƒ/0.95, Helios 44-2 58mm, Summicron 35mm, Biotar 75mm, Anamorphic 1.33x, Macro 100mm.
-            - **Interactive Bokeh & Depth**: Realistic depth-of-field simulation with physical aperture control (ƒ/0.95 to ƒ/16).
-            - **Studio Color Lab**: Moody Noir, Dreamy Glow, Nightcore Neon, Vivid Pop, Portra 400, Tri-X B&W.
-            - **Automatic Watermark**: Official "Shot with CaptureX" watermark badge with EXIF metadata.
-            - **Acoustic Feedback**: Mechanical shutter blade sound & tactile haptics.
+            ### ✨ What's New
+            - **Real live camera preview** — full camera with tap-to-focus, pinch-to-zoom
+            - **Video recording** — HD video with real-time timer, red recording indicator
+            - **Liquid Glass UI** — frosted BackdropFilter panels throughout the app
+            - **Centered shutter button** — like a real camera app: flip | shutter | gallery
+            - **Mode selector** — PHOTO | VIDEO | PORTRAIT | SLOW-MO
+            - **Flash toggle** — Off / Auto / On / Torch
+            - **Filter Studio** — 10 presets + manual exposure, saturation, temperature, vignette, grain sliders
+            - **About page** — CaptureX logo, version, feature cards, tech stack
+            - **Splash screen** — animated logo reveal on launch
+            - **Auto watermark** — "Shot with CaptureX" glass badge on every photo
+            - **App icon** — CaptureX logo as the launcher icon
 
-            ### 📦 Direct APK Download
-            Download `CaptureX-v1.0.0-Release.apk` below and install on any Android device.
-          files: release-output/CaptureX-v1.0.0-Release.apk
+            ### 📦 Install
+            Download `CaptureX-v1.1.0-Release.apk` below.
+            Allow installation from unknown sources, then install.
+          files: release-output/CaptureX-v1.1.0-Release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
