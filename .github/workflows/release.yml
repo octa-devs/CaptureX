@@ -9,6 +9,10 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   build-apk:
     name: Build Android Release APK
@@ -17,6 +21,8 @@ jobs:
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -28,25 +34,27 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.x'
           channel: 'stable'
           cache: true
+
+      - name: Verify Flutter & Android Environment
+        run: flutter doctor -v
 
       - name: Install Flutter Dependencies
         working-directory: ./capturex_mobile
         run: flutter pub get
 
-      - name: Build Android Release APK
+      - name: Build Android Universal Release APK
         working-directory: ./capturex_mobile
-        run: flutter build apk --release --split-per-abi=false
+        run: flutter build apk --release
 
-      - name: Rename APK Output
+      - name: Prepare Release Artifacts
         run: |
           mkdir -p release-output
           cp capturex_mobile/build/app/outputs/flutter-apk/app-release.apk release-output/CaptureX-v1.0.0-Release.apk
-          ls -la release-output
+          ls -la release-output/
 
-      - name: Upload APK Build Artifact
+      - name: Upload APK Artifact to GitHub Actions
         uses: actions/upload-artifact@v4
         with:
           name: CaptureX-v1.0.0-Release-APK
@@ -54,26 +62,27 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Create GitHub Release
+      - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
-          name: CaptureX Release v1.0.0
           tag_name: v1.0.0
+          name: "CaptureX Release v1.0.0 — Classic Camera Lenses"
           draft: false
           prerelease: false
+          generate_release_notes: false
           body: |
             ## 📸 CaptureX — Pro Classic Camera Lenses (v1.0.0)
 
             ### ✨ Key Features
             - **Classic Camera Lenses**: Noctilux 50mm ƒ/0.95, Helios 44-2 58mm, Summicron 35mm, Biotar 75mm, Anamorphic 1.33x, Macro 100mm.
-            - **Interactive Bokeh & Depth**: Realistic depth of field simulation with aperture control (ƒ/0.95 to ƒ/16).
+            - **Interactive Bokeh & Depth**: Realistic depth-of-field simulation with physical aperture control (ƒ/0.95 to ƒ/16).
             - **Studio Color Lab**: Moody Noir, Dreamy Glow, Nightcore Neon, Vivid Pop, Portra 400, Tri-X B&W.
             - **Automatic Watermark**: Official "Shot with CaptureX" watermark badge with EXIF metadata.
             - **Acoustic Feedback**: Mechanical shutter blade sound & tactile haptics.
 
             ### 📦 Direct APK Download
-            Download `CaptureX-v1.0.0-Release.apk` below and install on Android.
+            Download `CaptureX-v1.0.0-Release.apk` below and install on any Android device.
           files: release-output/CaptureX-v1.0.0-Release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
