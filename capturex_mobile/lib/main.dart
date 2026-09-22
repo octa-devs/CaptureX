@@ -647,15 +647,71 @@ class _CameraPageState extends State<CameraPage>
         const Duration(milliseconds: 80),
         () { if (mounted) setState(() => _flashing = false); });
     try {
+      // 1. Capture raw frame from camera
       final file = await _ctrl!.takePicture();
-      final dir = await getTemporaryDirectory();
-      final path =
-          p.join(dir.path, '${DateTime.now().millisecondsSinceEpoch}.jpg');
-      await file.saveTo(path);
-      if (mounted) _showPreview(path);
+
+      // 2. Bake the active filter + user adjustments into the pixel data
+      //    _bakeFilter reads the raw JPEG, applies ColorFilter.matrix via
+      //    dart:ui Canvas, and writes a new PNG to temp storage.
+      setState(() => _capturing = true); // keep spinner while processing
+      final processed = await _bakeFilter(file.path);
+      final finalPath = processed ?? file.path; // fallback: save raw if bake fails
+
+      if (mounted) _showPreview(finalPath);
     } catch (_) {}
     if (mounted) setState(() => _capturing = false);
   }
+
+  /// Applies [_matrix] (the active ColorFilter) to the image at [srcPath]
+  /// by drawing it onto a dart:ui Canvas with a ColorFilter-painted Paint,
+  /// then encodes the result to PNG and returns the new temp-file path.
+  /// Returns null on failure so the caller can fall back to the raw image.
+  Future<String?> _bakeFilter(String srcPath) async {
+    // Identity matrix → skip processing to save time
+    final isIdentity = _filterIdx == 0 &&
+        _uBrightness == 0 && _uContrast == 1.0 && _uSaturation == 1.0 &&
+        _uWarmth == 0 && _uTint == 0;
+    if (isIdentity) return srcPath; // nothing to bake
+
+    try {
+      // Load the raw JPEG bytes
+      final rawBytes = await File(srcPath).readAsBytes();
+      final codec   = await instantiateImageCodec(rawBytes);
+      final frame   = await codec.getNextFrame();
+      final src     = frame.image;
+      final iw = src.width;
+      final ih = src.height;
+
+      // Draw image with color-filter on an off-screen canvas
+      final recorder = PictureRecorder();
+      final canvas   = Canvas(recorder);
+      canvas.drawImage(
+        src,
+        Offset.zero,
+        Paint()..colorFilter = ColorFilter.matrix(_matrix),
+      );
+      src.dispose();
+
+      // Render to a ui.Image
+      final picture = recorder.endRecording();
+      final dst     = await picture.toImage(iw, ih);
+
+      // Encode to PNG bytes
+      final bd = await dst.toByteData(format: ImageByteFormat.png);
+      dst.dispose();
+      if (bd == null) return null;
+
+      // Write to a temp file and return the path
+      final dir  = await getTemporaryDirectory();
+      final out  = p.join(dir.path, 'cx_${DateTime.now().millisecondsSinceEpoch}.png');
+      await File(out).writeAsBytes(bd.buffer.asUint8List());
+      return out;
+    } catch (_) {
+      return null; // silently fall back to unfiltered
+    }
+  }
+
+
 
   Future<void> _toggleVideo() async {
     if (_ctrl == null || !_ctrl!.value.isInitialized) return;
