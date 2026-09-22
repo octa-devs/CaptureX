@@ -58,14 +58,14 @@ jobs:
       - name: Prepare Output Directory
         run: |
           mkdir -p release-output
-          cp capturex_mobile/build/app/outputs/flutter-apk/app-release.apk release-output/CaptureX-v1.1.0-Release.apk
+          cp capturex_mobile/build/app/outputs/flutter-apk/app-release.apk release-output/CaptureX-v1.2.0-Release.apk
           ls -la release-output/
 
       - name: Upload APK Artifact to GitHub Actions
         uses: actions/upload-artifact@v4
         with:
-          name: CaptureX-v1.1.0-Release-APK
-          path: release-output/CaptureX-v1.1.0-Release.apk
+          name: CaptureX-v1.2.0-Release-APK
+          path: release-output/CaptureX-v1.2.0-Release.apk
           if-no-files-found: error
           retention-days: 30
 
@@ -73,29 +73,26 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         with:
-          tag_name: v1.1.0
-          name: "CaptureX v1.1.0 — Real Camera + Video + Liquid Glass"
+          tag_name: v1.2.0
+          name: "CaptureX v1.2.0 — Filters on Dock + All Effects + Save Fixed"
           draft: false
           prerelease: false
           body: |
-            ## 📸 CaptureX v1.1.0 — Pro Camera & Video App
+            ## 📸 CaptureX v1.2.0
 
-            ### ✨ What's New
-            - **Real live camera preview** — full camera with tap-to-focus, pinch-to-zoom
-            - **Video recording** — HD video with real-time timer, red recording indicator
-            - **Liquid Glass UI** — frosted BackdropFilter panels throughout the app
-            - **Centered shutter button** — like a real camera app: flip | shutter | gallery
-            - **Mode selector** — PHOTO | VIDEO | PORTRAIT | SLOW-MO
-            - **Flash toggle** — Off / Auto / On / Torch
-            - **Filter Studio** — 10 presets + manual exposure, saturation, temperature, vignette, grain sliders
-            - **About page** — CaptureX logo, version, feature cards, tech stack
-            - **Splash screen** — animated logo reveal on launch
-            - **Auto watermark** — "Shot with CaptureX" glass badge on every photo
-            - **App icon** — CaptureX logo as the launcher icon
+            ### 🆕 What's New
+            - **Filters on camera dock** — 10 filter presets (Original, Moody, Dreamy, Nightcore, Vivid, Portra, B&W, Cinematic, Vintage, Velvia) shown as a live strip at the bottom of the camera screen. Tap any filter to see it applied instantly on the live preview.
+            - **Real-time ColorFilter engine** — All filter effects (including user adjustments) are applied via GPU-accelerated `ColorFilter.matrix` directly on the camera preview.
+            - **8 adjustment sliders** — Brightness, Contrast, Saturation, Temperature, Tint, Vignette, Grain, Exposure. Tap the tune icon to expand the controls panel.
+            - **Vignette + Grain overlays** — Rendered on top of the camera preview.
+            - **Save to Gallery FIXED** — Uses the `gal` package to reliably save photos to your device gallery in a "CaptureX" album.
+            - **About page** — OctaDevs credited as Lead Developers. © 2026.
+            - **Liquid glass UI** — Frosted backdrop filter on top bar, bottom panel, preview sheet, and watermark badge.
+            - **Shutter centered** — Flip camera ← ⬤ → Gallery row at the center bottom.
 
             ### 📦 Install
-            Download `CaptureX-v1.1.0-Release.apk` below.
-            Allow installation from unknown sources, then install.
-          files: release-output/CaptureX-v1.1.0-Release.apk
+            Download `CaptureX-v1.2.0-Release.apk` below.
+            Enable "Install unknown apps" for your file manager, then install.
+          files: release-output/CaptureX-v1.2.0-Release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
