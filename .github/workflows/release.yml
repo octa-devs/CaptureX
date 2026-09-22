@@ -34,21 +34,24 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.24.5'
           channel: 'stable'
           cache: true
 
-      - name: Verify Flutter & Android Environment
-        run: flutter doctor -v
+      - name: Verify Environment
+        run: |
+          flutter doctor -v
+          java -version
 
-      - name: Install Flutter Dependencies
+      - name: Install Dependencies
         working-directory: ./capturex_mobile
         run: flutter pub get
 
       - name: Build Android Universal Release APK
         working-directory: ./capturex_mobile
-        run: flutter build apk --release
+        run: flutter build apk --release --no-tree-shake-icons
 
-      - name: Prepare Release Artifacts
+      - name: Prepare Output Directory
         run: |
           mkdir -p release-output
           cp capturex_mobile/build/app/outputs/flutter-apk/app-release.apk release-output/CaptureX-v1.0.0-Release.apk
@@ -70,7 +73,6 @@ jobs:
           name: "CaptureX Release v1.0.0 — Classic Camera Lenses"
           draft: false
           prerelease: false
-          generate_release_notes: false
           body: |
             ## 📸 CaptureX — Pro Classic Camera Lenses (v1.0.0)
 
